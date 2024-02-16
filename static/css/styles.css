@@ -1,0 +1,140 @@
+body {
+    background-image: url("../images/barro.png");
+    background-size: cover;
+    /* background-repeat: no-repeat; */
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.header-buttons a {
+    text-decoration: none;
+    color: #fff;
+    background-color: #4CAF50;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-left: 10px;
+    transition: background-color 0.3s;
+}
+
+.header-buttons a:hover {
+    background-color: #45a049;
+}
+
+.header_2 {
+    font-family: Arial, sans-serif;
+    color: orange;
+    text-align: center;
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* background-color: #f2f2f2; */
+    /* padding: 20px 20px; */
+}
+
+.row a {
+    display: inline-block; /* Для того чтобы ссылка занимала только необходимое пространство */
+    text-decoration: none; /* Убираем стандартное подчеркивание */
+    color: orange; /* Цвет текста */
+    /* margin: 0; */
+}
+
+.row a:hover {
+    background-color: lightgray; /* Фон при наведении */
+}
+
+.row a:hover img {
+    opacity: 0.7; /* Прозрачность изображения при наведении */
+}
+
+.row a:hover p {
+    font-weight: bold; /* Увеличение жирности текста при наведении */
+}
+
+.row img {
+    vertical-align: middle; /* Выравнивание изображения по вертикали */
+    /* margin: 0; */
+}
+
+.row p {
+    margin: 0; /* Убираем внешние отступы у текста */
+    /* line-height: 1; Устанавливаем высоту строки равной 1, чтобы уменьшить расстояние между текстом и изображением */
+}
+
+.row {
+    font-family: Arial, sans-serif;
+    font-size: 24px;
+    /* font-weight: bold; */
+    justify-content: space-around;
+    display: flex;
+    /* align-items: center; */
+    color: orange;
+    /* margin: 0; */
+}
+
+.contact-info {
+    background-color: #fff;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+}
+
+.table-wrapper {
+    margin-top: 50px;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+th {
+    background-color: #f2f2f2;
+}
+
+/* form {
+    width: 80%;
+    margin: 0 auto;
+}
+
+label {
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+input[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover {
+    background-color: #45a049;
+} */

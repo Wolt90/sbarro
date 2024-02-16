@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-buttons">
+            <a href="/register">Регистрация</a>
+            <a href="/login">Войти</a>
+        </div>
+    </div>
+    <div class="header_2">
+        <h1 class="text-center">Мероприятия</h1>
+    </div>  
+    <div class="row">                
+        <div class="col-md-2 menu-item">            
+            <a href="/page1"> <p>Триатлон</p><img src="{{ url_for('static', filename='images/1_run_country_ski.jpg') }}" class="img-fluid" alt="Page 1" width="120" height="100"><p>21.01.24</p></a>           
+        </div>
+        <div class="col-md-2 menu-item">           
+            <a href="/page2"><p>ЧЛМД</p><img src="{{ url_for('static', filename='images/2_ski.jpg') }}" class="img-fluid" alt="Page 2" width="120" height="100"><p>03.02.24</p></a>            
+        </div>
+        <div class="col-md-2 menu-item">            
+            <a href="/page3"><p>Дуатлон</p><img src="{{ url_for('static', filename='images/3_run_country_run.jpg') }}" class="img-fluid" alt="Page 3" width="120" height="100"><p>01.05.23</p></a>            
+        </div>
+        <div class="col-md-2 menu-item">           
+            <a href="/page4"><p>Плавание</p><img src="{{ url_for('static', filename='images/4_swim.jpg') }}" class="img-fluid" alt="Page 4" width="120" height="100"><p>12.08.23</p></a>            
+        </div>
+        <div class="col-md-2 menu-item">           
+            <a href="/page5"><p>Побег из лета</p><img src="{{ url_for('static', filename='images/5_run_from_summer.jpg') }}" class="img-fluid" alt="Page 5" width="120" height="100"><p>27.08.23</p></a>           
+        </div>
+        <div class="col-md-2 menu-item">            
+            <a href="/page6"><p>Веломарафон</p><img src="{{ url_for('static', filename='images/6_vel.jpg') }}" class="img-fluid" alt="Page 6" width="120" height="100"><p>01.10.23</p></a>            
+        </div>
+    </div>
+    {% include 'contact-info.html' %}
+    <!-- <div class="contact-info">
+        <a href="tel:+79612544444"><img src="{{ url_for('static', filename='images/phone_icon_.jpg') }}" alt="Phone Icon" width="15" height="15"> +79612544444</a><br>
+        <a href="https://yandex.ru/maps/-/CDBoNP6l"><img src="{{ url_for('static', filename='images/map_icon_.png') }}" alt="Map Icon" width="15" height="15"> Россия, Гусь-хрустальный, Баринова роща</a>
+        <a href="https://vk.com/scbarro"><img src="{{ url_for('static', filename='images/bar_roscha.jpg') }}" alt="Gerb" width="15" height="15"> https://vk.com/scbarro</a>
+        <a href="mailto:gussport@mail.ru">gussport@mail.ru</a>
+    </div> -->
+    </div>
+</body>
+</html>
