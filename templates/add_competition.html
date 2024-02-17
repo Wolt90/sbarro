@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Добавить соревнование</title>
+</head>
+<body>
+    <h1>Добавить соревнование</h1>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <p>{{ form.title.label }}<br>{{ form.title(size=32) }}</p>
+        <p>{{ form.date.label }}<br>{{ form.date }}</p>
+        <p>{{ form.image.label }}<br>{{ form.image }}</p>
+        <p>{{ form.submit() }}</p>
+    </form>
+</body>
+</html>

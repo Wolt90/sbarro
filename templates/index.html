@@ -16,8 +16,19 @@
     <div class="header_2">
         <h1 class="text-center">Мероприятия</h1>
     </div>  
-    <div class="row">                
-        <div class="col-md-2 menu-item">            
+    <div class="row">  
+        <ul>
+            {% for competition in competitions %}
+            <li>
+                <a href="/page1"> <p>{{ competition.title }}</p><img src="{{ url_for('static', filename='images/' + competition.image) }}" class="img-fluid" alt="Page 1" width="120" height="100"><p>{{ competition.date }}</p></a>
+                <!-- <h2>{{ competition.title }}</h2>
+                <p>Дата: {{ competition.date }}</p>
+                <img src="{{ url_for('static', filename='images/' + competition.image) }}" alt="Competition Image" style="max-width: 200px;"> -->
+            </li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for('add_competition') }}">Добавить соревнование</a>              
+        <!-- <div class="col-md-2 menu-item">            
             <a href="/page1"> <p>Триатлон</p><img src="{{ url_for('static', filename='images/1_run_country_ski.jpg') }}" class="img-fluid" alt="Page 1" width="120" height="100"><p>21.01.24</p></a>           
         </div>
         <div class="col-md-2 menu-item">           
@@ -34,7 +45,7 @@
         </div>
         <div class="col-md-2 menu-item">            
             <a href="/page6"><p>Веломарафон</p><img src="{{ url_for('static', filename='images/6_vel.jpg') }}" class="img-fluid" alt="Page 6" width="120" height="100"><p>01.10.23</p></a>            
-        </div>
+        </div> -->
     </div>
     {% include 'contact-info.html' %}
     <!-- <div class="contact-info">
