@@ -1,0 +1,9 @@
+email_validator
+flask
+flask-wtf
+flask-login
+sqlalchemy
+flask_sqlalchemy
+os
+time
+pandas

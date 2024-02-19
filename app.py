@@ -1,66 +1,108 @@
 import pandas as pd
 import time
-from flask import Flask, render_template, request, redirect, url_for
-from flask_wtf import FlaskForm
-from flask_sqlalchemy import SQLAlchemy
-from wtforms import StringField, FileField, DateField, SubmitField, TextAreaField
-from wtforms.validators import DataRequired
+from flask import render_template, request, redirect, url_for, flash, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
 import os
+from forms import RegistrationForm, LoginForm, CompetitionForm
+from configs_clases import User, Competition, app, db, login_manager
 
-app = Flask(__name__)
-app.config['BOOTSTRAP_SERVE_LOCAL'] = True
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///competitions.db'
-app.config['SECRET_KEY'] = 'secret_key'
-db = SQLAlchemy(app)
+# Контекстный процессор для передачи формы входа во все шаблоны
+@app.context_processor
+def inject_login_form():
+    return dict(login_form=LoginForm())
+def inject_registration_form():
+    return dict(registration_form=RegistrationForm())
 
-# Модель для хранения пользователей
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(80), nullable=False)
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
-# Страница регистрации
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST':
-        username = request.form['username']
+    registration_form = RegistrationForm()
+    if registration_form.validate_on_submit(): # проверка на валидацию
+        
+        # if request.method == 'POST':
+        name = request.form['name']
+        # surname = request.form['surname']
+        # patronymic = request.form['patronymic']
+        # gender = request.form['gender']
+        email = request.form['email']
         password = request.form['password']
-        # Проверяем, что пользователь с таким именем еще не зарегистрирован
-        if User.query.filter_by(username=username).first():
-            # print('Пользователь с таким именем уже зарегистрирован!')
-            # time.sleep(2)
-            return 'Пользователь с таким именем уже зарегистрирован!' #redirect('/register')
-
-        # Добавляем нового пользователя в базу данных
-        new_user = User(username=username, password=password)
+        # city = request.form['city']
+        telephone = request.form['telephone']
+        # birthday = request.form['birthday']
+        # vk = request.form['vk']
+    
+    # Проверяем, существует ли пользователь с таким же именем
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            flash('Пользователь с таким именем уже существует', 'error')
+            # return redirect(url_for('register'))
+        
+        # Хешируем пароль перед сохранением в базу данных
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+        new_user = User(name=name, 
+                        email=email, password=hashed_password, telephone=telephone) 
+                        # birthday=birthday, vk=vk)
+        # new_user = User(name=name, surname=surname, patronymic=patronymic, gender=gender, 
+        #                 email=email, password=hashed_password, city=city, telephone=telephone, 
+        #                 birthday=birthday, vk=vk)
         db.session.add(new_user)
         db.session.commit()
-        return redirect('/success')
-    return render_template('register.html')
+        flash('Регистрация успешна! Пожалуйста, войдите', 'success')
+    else: 
+        flash('Ошибка', 'error')
+        # return redirect(url_for('register'))
 
-@app.route('/success')
-def success():
-    # print('Регистрация прошла успешно!')
-    # time.sleep(5)
-    return 'Регистрация прошла успешно!' #redirect('/')
+    return render_template('register.html', registration_form=registration_form)
 
-class Competition(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    image = db.Column(db.String(100), nullable=False, default='default.jpg')
-    date = db.Column(db.Date, nullable=False)
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        
+        # Ищем пользователя в базе данных
+        email = User.query.filter_by(email=email).first()
+        if email:
+            # Проверяем, соответствует ли введенный пароль хэшу в базе данных
+            if check_password_hash(email.password, password):
+                session['email'] = email
+                flash('Вы успешно вошли', 'success')
+                return redirect(url_for('profile'))
+        
+        flash('Неправильное имя пользователя или пароль', 'error')
+        return redirect(url_for('login'))
+    
+    return render_template('login.html')
 
-class CompetitionForm(FlaskForm):
-    title = StringField('Заголовок', validators=[DataRequired()])
-    image = FileField('Картинка', validators=[DataRequired()])
-    date = DateField('Дата', validators=[DataRequired()])
-    submit = SubmitField('Добавить')
+@app.route('/profile')
+def profile():
+    if 'email' in session:
+        return render_template('profile.html', username=session['email'])
+    else:
+        flash('Пожалуйста, войдите, чтобы получить доступ к профилю', 'error')
+        return redirect(url_for('login'))
+
+@app.route('/logout')
+def logout():
+    session.pop('email', None)
+    flash('Вы успешно вышли', 'success')
+    return redirect(url_for('index'))
 
 @app.route('/')
 def index():
     competitions = Competition.query.all()
-    return render_template('index.html', competitions=competitions)
+    return render_template('index.html', competitions=competitions)#, form = form)
+
+@app.route('/contacts')
+def contacts():
+    return render_template('contacts.html')
+
+@app.route('/page1')
+def page1():
+    return render_template('page1.html')
 
 @app.route('/add_competition', methods=['GET', 'POST'])
 def add_competition():

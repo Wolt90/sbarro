@@ -4,18 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}"> -->
+    <style>
+        .error {
+            border: 1px solid red;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Регистрация</h2>
-        <form action="/register" method="post">
-            <label for="username">Имя пользователя:</label><br>
-            <input type="text" id="username" name="username" required><br>
-            <label for="password">Пароль:</label><br>
-            <input type="password" id="password" name="password" required><br><br>
-            <input type="submit" value="Зарегистрироваться">
-        </form>
-    </div>
+{% include 'header.html' %}
+<div class="register">
+    <h1>Регистрация на сайте</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <<form action="{{ url_for('register') }}" method="POST">     <!-- <form action="{{ url_for('register') }}" method="POST">  <form method="POST" action="/">  -->
+        {{ registration_form.hidden_tag() }}
+        <div>
+            {{ registration_form.name.label }}
+            {{ registration_form.name(class="form-control" + (' error' if registration_form.name.errors else ''), placeholder="Name") }}
+            {% for error in registration_form.name.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div>
+            {{ registration_form.email.label }}
+            {{ registration_form.email(class="form-control" + (' error' if registration_form.email.errors else ''), placeholder="email") }}
+            {% for error in registration_form.email.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div>
+            {{ registration_form.password.label }}
+            {{ registration_form.password(class="form-control" + (' error' if registration_form.password.errors else ''), placeholder="password") }}
+            {% for error in registration_form.password.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div>
+            {{ registration_form.telephone.label }}
+            {{ registration_form.telephone(class="form-control" + (' error' if registration_form.telephone.errors else ''), placeholder="telephone") }}
+            {% for error in registration_form.telephone.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <input type="submit" value="Зарегистрироваться">
+    </form>
+    <br>
+</div>
+{% include 'contact-info.html' %}
 </body>
 </html>
