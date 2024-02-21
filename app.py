@@ -20,19 +20,18 @@ def load_user(user_id):
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     registration_form = RegistrationForm()
-    if registration_form.validate_on_submit(): # проверка на валидацию
-        
+    if registration_form.validate_on_submit(): # проверка на валидацию       
         # if request.method == 'POST':
         name = request.form['name']
-        # surname = request.form['surname']
-        # patronymic = request.form['patronymic']
-        # gender = request.form['gender']
+        surname = request.form['surname']
+        patronymic = request.form['patronymic']
+        gender = request.form['gender']
         email = request.form['email']
         password = request.form['password']
-        # city = request.form['city']
+        city = request.form['city']
         telephone = request.form['telephone']
-        # birthday = request.form['birthday']
-        # vk = request.form['vk']
+        birthday = request.form['birthday']
+        vk = request.form['vk']
     
     # Проверяем, существует ли пользователь с таким же именем
         existing_user = User.query.filter_by(email=email).first()
@@ -42,40 +41,64 @@ def register():
         
         # Хешируем пароль перед сохранением в базу данных
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        new_user = User(name=name, 
-                        email=email, password=hashed_password, telephone=telephone) 
+        # new_user = User(name=name, 
+        #                 email=email, password=hashed_password, telephone=telephone) 
                         # birthday=birthday, vk=vk)
-        # new_user = User(name=name, surname=surname, patronymic=patronymic, gender=gender, 
-        #                 email=email, password=hashed_password, city=city, telephone=telephone, 
-        #                 birthday=birthday, vk=vk)
+        new_user = User(name=name, surname=surname, patronymic=patronymic, gender=gender, 
+                        email=email, password=hashed_password, city=city, telephone=telephone, 
+                        birthday=birthday, vk=vk)
         db.session.add(new_user)
         db.session.commit()
-        flash('Регистрация успешна! Пожалуйста, войдите', 'success')
+        # flash('Регистрация успешна! Пожалуйста, войдите', 'success')
+        return redirect(url_for('login'))
     else: 
-        flash('Ошибка', 'error')
+        a='b'
+        # flash('Ошибка', 'error')
         # return redirect(url_for('register'))
 
-    return render_template('register.html', registration_form=registration_form)
+    return render_template('register.html', form=registration_form)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    login_form = LoginForm()
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
+
+        user = User.query.filter_by(email=email).first()
+
+        if user:
+            if check_password_hash(user.password, password):
+                # Авторизация успешна
+                flash('Вы успешно вошли в систему!', 'success')
+                return redirect(url_for('index'))
+            else:
+                # Неправильный пароль
+                flash('Неправильный пароль. Пожалуйста, попробуйте снова.', 'danger')
+        else:
+            # Пользователь с таким email не найден
+            flash('Пользователь с таким email не найден. Пожалуйста, зарегистрируйтесь.', 'danger')
+
+    return render_template('login.html', form=login_form)
+# def login():
+#     login_form = LoginForm()
+#     if login_form.validate_on_submit():
+#         email = request.form['email']
+#         password = generate_password_hash(request.form['password'], method='pbkdf2:sha256')
         
-        # Ищем пользователя в базе данных
-        email = User.query.filter_by(email=email).first()
-        if email:
-            # Проверяем, соответствует ли введенный пароль хэшу в базе данных
-            if check_password_hash(email.password, password):
-                session['email'] = email
-                flash('Вы успешно вошли', 'success')
-                return redirect(url_for('profile'))
+#         # Ищем пользователя в базе данных
+#         email = User.query.filter_by(email=email).first()
+#         if email:
+#             # Проверяем, соответствует ли введенный пароль хэшу в базе данных
+#             if check_password_hash(email.password, password):
+#                 session['email'] = email
+#                 flash('Вы успешно вошли', 'success')
+#                 return redirect(url_for('profile'))
         
-        flash('Неправильное имя пользователя или пароль', 'error')
-        return redirect(url_for('login'))
+#         flash('Неправильное имя пользователя или пароль', 'error')
+#         return redirect(url_for('login'))
     
-    return render_template('login.html')
+#     return render_template('login.html', form=login_form)
 
 @app.route('/profile')
 def profile():

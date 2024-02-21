@@ -1,14 +1,16 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, FileField, DateField, SubmitField, TextAreaField, PasswordField, SelectField, RadioField, DateField
+from wtforms import StringField, FileField, DateField, SubmitField, TextAreaField, PasswordField, SelectField, RadioField, widgets, DateField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError, Regexp
 from datetime import date
+from werkzeug.security import generate_password_hash, check_password_hash
+from configs_clases import User
 
 class AgeValidator:
     def __init__(self, min_age=7, max_age=90, message=None):
         self.min_age = min_age
         self.max_age = max_age
         if not message:
-            message = f'Age must be between {min_age} and {max_age}.'
+            message = f'Возраст должен быть между {min_age} и {max_age}.'
         self.message = message
 
     def __call__(self, form, field):
@@ -19,25 +21,54 @@ class AgeValidator:
             if age < self.min_age or age > self.max_age:
                 raise ValidationError(self.message)
         except (ValueError, TypeError):
-            raise ValidationError('Invalid date format.')
+            raise ValidationError(f'Ошибка, возраст только от {self.min_age} до {self.max_age}')
 
+# class LoginValidator:
+#     def __init__(self, min_age=7, max_age=90, message=None):
+#         self.min_age = min_age
+#         self.max_age = max_age
+#         if not message:
+#             message = f'Возраст должен быть между {min_age} и {max_age}.'
+#         self.message = message
+
+#     def __call__(self, form, field):
+#         try:
+#             birthdate = field.data
+#             today = date.today()
+#             age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
+#             if age < self.min_age or age > self.max_age:
+#                 raise ValidationError(self.message)
+#         except (ValueError, TypeError):
+#             raise ValidationError(f'Ошибка, возраст только от {self.min_age} до {self.max_age}')
+        
 class RegistrationForm(FlaskForm):
-    name = StringField('Name', validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Invalid name")], render_kw={"placeholder": "Иван"})
-    # surname = StringField('Surname', validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Invalid surname")], render_kw={"placeholder": "Иванов"})
-    # patronymic = StringField('Surname', validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Invalid patronymic")], render_kw={"placeholder": "Иванович"}) # отчество
-    # gender = RadioField('Gender', choices=[('М','М'), ('Ж','Ж')], validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired(), Email(), Regexp('[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}', message="Invalid email")], render_kw={"placeholder": "ivanov@mail.ru"})
-    password = PasswordField('Password', validators=[DataRequired()])
-    # city = StringField('City', validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Invalid city")], render_kw={"placeholder": "Иваново"})
-    telephone = StringField('Telephone', validators=[DataRequired(), Regexp('^\d{10}$', message="Invalid phone number")], render_kw={"placeholder": "71234567890"})
-    # birthday = DateField('Birthday', validators=[DataRequired(), AgeValidator()])
-    # vk = StringField('VK', validators=[DataRequired(), Regexp('(?:https?://)?(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/\S*)?', message="Invalid link")])
-    submit = SubmitField('Register')
+    name = StringField('Имя', validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Введите только буквы")], render_kw={"placeholder": "Иван"})
+    surname = StringField('Фамилия', validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Введите только буквы")], render_kw={"placeholder": "Иванов"})
+    patronymic = StringField('Отчество', validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Введите только буквы")], render_kw={"placeholder": "Иванович"}) # отчество
+    gender = RadioField('Пол', choices=[('М','М'), ('Ж','Ж')], validators=[DataRequired()])
+    email = StringField('Почта', validators=[DataRequired(), Regexp('[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}', message="Не почта, пример - ivanov@mail.ru")], render_kw={"placeholder": "ivanov@mail.ru"})   #Email(), 
+    password = PasswordField('Пароль', validators=[DataRequired()])
+    city = StringField('Город', validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Введите только буквы")], render_kw={"placeholder": "Иваново"})
+    telephone = StringField('Телефон', validators=[DataRequired(), Regexp('^\d{11}$', message="Введите 11 цифр без () и +, пример 79102345678")], render_kw={"placeholder": "79102345678"})
+    birthday = DateField('День рождения', validators=[DataRequired(), AgeValidator()])
+    vk = StringField('Ссылка на вконтакте', validators=[DataRequired(), Regexp('(?:https?://)?(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/\S*)?', message="Ошибка, пример ссылки: https://vk.com/example")], render_kw={"placeholder": "https://vk.com/example"})
+    submit = SubmitField('Зарегистрироваться')
 
 class LoginForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    submit = SubmitField('Login')
+    email = StringField('Почта', validators=[DataRequired()])   #Email(), 
+    password = PasswordField('Пароль', validators=[DataRequired()])
+    submit = SubmitField('Войти')
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if not user:
+            raise ValidationError('Пользователя с такой почтой не существует. Проверьте написание или зарегистрируйтесь')
+        # if email:
+        #     # Проверяем, соответствует ли введенный пароль хэшу в базе данных
+        #     if check_password_hash(user.password, generate_password_hash(self.password, method='pbkdf2:sha256')):
+        #         session['user'] = user
+        #     else:
+        #        raise ValidationError('Неправильный пароль') 
 
 class CompetitionForm(FlaskForm):
     title = StringField('Заголовок', validators=[DataRequired()])

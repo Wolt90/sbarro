@@ -138,10 +138,10 @@ th {
     background-color: #f9f9f9;
 } */
 
-.error {
+/* .error {
     color: red;
     border: 1px solid red;
-}
+} */
 
 .to_index {
     font-family: Arial, sans-serif;
@@ -155,39 +155,9 @@ th {
     /* padding: 20px 20px; */
 }
 
-label {
-    font-weight: bold;
-    /* text-align: center; */
-}
-
-input[type="text"],
-input[type="password"] {
-    text-align: center;
-    width: 50%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-input[type="submit"] {
-    text-align: center;
-    width: 50%;
-    padding: 10px;
-    background-color: #4caf50;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-input[type="submit"]:hover {
-    background-color: #45a049;
-}  
-
-.modal {
-    z-index: 1050; /* Устанавливаем большой z-index, чтобы окно модального диалога оставалось на переднем плане */
-}
+/* .modal {
+    z-index: 1050; /* Устанавливаем большой z-index, чтобы окно модального диалога оставалось на переднем плане 
+} */
 
 .contacts {
     text-align: center;
@@ -198,18 +168,88 @@ input[type="submit"]:hover {
     /* background-color: rgba(255, 255, 255, 0.5); */
 }
 
-.register {
-    text-align: center;
-    background-color: rgba(255, 255, 255, 0.5);
-    width: 400px; /* Устанавливаем желаемую ширину формы */
-    margin: auto; /* Центрируем форму по горизонтали */
+/* начало форма регистрации */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* height: 100vh; Регулирует высоту контейнера по высоте видимой области страницы */
 }
+
+.register {
+    max-width: 310px;
+    margin: 20px 0px 0px 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.register h1{
+    font-size: 30px;
+    padding: 5px;
+    width: 100%;
+    text-align: center;
+    margin: -5px 0px 10px 0px;
+}
+
+.form-group {
+    margin-bottom: 10px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+}
+
+.form-control {
+    width: 300px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.radio {
+    display: inline;
+}
+
+.radio label {
+    display: inline;
+    margin-right: 5px;
+}
+
+input[type="submit"] {
+    text-align: center;
+    /* width: 50%; */
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    margin: 10px 0px -15px 0px;
+}
+
+input[type="submit"]:hover {
+    background-color: #45a049;
+}  
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.invalid-feedback {
+    color: #dc3545;
+    font-size: 0.8em;
+}
+/* конец форма регистрации */
+
 .login {
     text-align: center;
     background-color: rgba(255, 255, 255, 0.5);
 }
 
-/* подсказки в форме */
+/* начало подсказки в форме ввода, пока пустота в поле ввода */
 ::-webkit-input-placeholder {
     color: #999; /* Серый цвет */
     opacity: 0.5; /* Низкая насыщенность */
@@ -226,3 +266,4 @@ input[type="submit"]:hover {
     color: #999;
     opacity: 0.5;
 }
+/* конец подсказки в форме ввода, пока пустота в поле ввода */

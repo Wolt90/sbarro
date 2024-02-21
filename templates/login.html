@@ -3,31 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Авторизация</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
 {% include 'header.html' %}
-<div class="register">
-    <h1>Войти на сайт со своими данными</h1>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    {{ message }}
+<div class="container">    
+    <div class="register">
+        <h1>Войти на сайт</h1>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div>{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            {% for field in form %}
+                <div class="form-group">
+                    {% if field.name not in ['csrf_token', 'submit'] %}
+                        <label>{{ field.label }}</label>
+                    {% endif %}
+                    {{ field(class="form-control" + (' is-invalid' if field.errors else '')) }}
+                    {% for error in field.errors %}
+                        <span class="invalid-feedback">{{ error }}</span>
+                    {% endfor %}
                 </div>
             {% endfor %}
-        {% endif %}
-    {% endwith %}
-    <form action="{{ url_for('login') }}" method="POST">
-        <label for="username">Введите логин:</label><br>
-        <input type="text" id="username" name="username" required><br>
-        <label for="password">Введите пароль:</label><br>
-        <input type="password" id="password" name="password" required><br><br>
-        <button type="submit">Войти</button>
-    </form>
-    <br>
+        </form>
+    </div>
 </div>
 {% include 'contact-info.html' %}
 </body>
