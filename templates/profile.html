@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
+    <title>Личный кабинет</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
-    <h1>Profile</h1>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    {{ message }}
-                </div>
+{% include 'header.html' %}
+<div class="container">=
+    <div class="register">
+        <h1>Личный кабинет</h1>
+        <div class="form-group">
+            {% for key, value in user_data.items() %}
+                {% if key not in ['id', 'password'] %}
+                    <dt>{{ key }}</dt>
+                    <dd>{{ value }}</dd>
+                {% endif %}               
             {% endfor %}
-        {% endif %}
-    {% endwith %}
-    {% if username %}
-        <p>Welcome, {{ username }}!</p>
-        <p><a href="{{ url_for('logout') }}">Logout</a></p>
-    {% else %}
-        <p>Please <a href="{{ url_for('login') }}">login</a> to access your profile.</p>
-    {% endif %}
+        </div>
+    </div>
+</div>
+{% include 'contact-info.html' %}
 </body>
 </html>

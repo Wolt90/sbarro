@@ -1,9 +1,10 @@
 import pandas as pd
 import time
-from flask import render_template, request, redirect, url_for, flash, jsonify
+from flask import render_template, request, redirect, url_for, flash, jsonify, session
+from flask_login import login_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
-from forms import RegistrationForm, LoginForm, CompetitionForm
+from forms import RegistrationForm, LoginForm, CompetitionForm, EditProfileForm
 from configs_clases import User, Competition, app, db, login_manager
 
 # Контекстный процессор для передачи формы входа во все шаблоны
@@ -21,7 +22,6 @@ def load_user(user_id):
 def register():
     registration_form = RegistrationForm()
     if registration_form.validate_on_submit(): # проверка на валидацию       
-        # if request.method == 'POST':
         name = request.form['name']
         surname = request.form['surname']
         patronymic = request.form['patronymic']
@@ -32,81 +32,83 @@ def register():
         telephone = request.form['telephone']
         birthday = request.form['birthday']
         vk = request.form['vk']
-    
-    # Проверяем, существует ли пользователь с таким же именем
-        existing_user = User.query.filter_by(email=email).first()
-        if existing_user:
-            flash('Пользователь с таким именем уже существует', 'error')
-            # return redirect(url_for('register'))
         
         # Хешируем пароль перед сохранением в базу данных
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        # new_user = User(name=name, 
-        #                 email=email, password=hashed_password, telephone=telephone) 
-                        # birthday=birthday, vk=vk)
         new_user = User(name=name, surname=surname, patronymic=patronymic, gender=gender, 
                         email=email, password=hashed_password, city=city, telephone=telephone, 
                         birthday=birthday, vk=vk)
         db.session.add(new_user)
         db.session.commit()
-        # flash('Регистрация успешна! Пожалуйста, войдите', 'success')
-        return redirect(url_for('login'))
-    else: 
-        a='b'
-        # flash('Ошибка', 'error')
-        # return redirect(url_for('register'))
+        # Автоматическая авторизация после успешной регистрации
+        login_user(new_user)
+
+        return redirect(url_for('profile'))
 
     return render_template('register.html', form=registration_form)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     login_form = LoginForm()
-    if request.method == 'POST':
+    if login_form.validate_on_submit():
         email = request.form['email']
-        password = request.form['password']
-
         user = User.query.filter_by(email=email).first()
-
-        if user:
-            if check_password_hash(user.password, password):
-                # Авторизация успешна
-                flash('Вы успешно вошли в систему!', 'success')
-                return redirect(url_for('index'))
-            else:
-                # Неправильный пароль
-                flash('Неправильный пароль. Пожалуйста, попробуйте снова.', 'danger')
-        else:
-            # Пользователь с таким email не найден
-            flash('Пользователь с таким email не найден. Пожалуйста, зарегистрируйтесь.', 'danger')
+        session['user_id'] = user.id
+        return redirect(url_for('profile'))
 
     return render_template('login.html', form=login_form)
-# def login():
-#     login_form = LoginForm()
-#     if login_form.validate_on_submit():
-#         email = request.form['email']
-#         password = generate_password_hash(request.form['password'], method='pbkdf2:sha256')
-        
-#         # Ищем пользователя в базе данных
-#         email = User.query.filter_by(email=email).first()
-#         if email:
-#             # Проверяем, соответствует ли введенный пароль хэшу в базе данных
-#             if check_password_hash(email.password, password):
-#                 session['email'] = email
-#                 flash('Вы успешно вошли', 'success')
-#                 return redirect(url_for('profile'))
-        
-#         flash('Неправильное имя пользователя или пароль', 'error')
-#         return redirect(url_for('login'))
-    
-#     return render_template('login.html', form=login_form)
 
 @app.route('/profile')
 def profile():
-    if 'email' in session:
-        return render_template('profile.html', username=session['email'])
+    if 'user_id' in session:
+        user_id = session['user_id']
+        user = User.query.get(user_id)  # Получаем пользователя из базы данных по его идентификатору
+        user_data = user.__dict__
+        # Удалить лишние ключи из словаря
+        user_data.pop('_sa_instance_state', None)
+        if user:
+            return render_template('profile.html', user_data=user_data, form=RegistrationForm())
+        else:
+            return "Пользователь не найден"
     else:
-        flash('Пожалуйста, войдите, чтобы получить доступ к профилю', 'error')
-        return redirect(url_for('login'))
+        return redirect(url_for('login'))  # Если пользователь не авторизован, перенаправляем его на страницу входа
+
+# @app.route('/profile')
+# @login_required
+# def profile():
+#     return render_template('profile.html', current_user=current_user)
+
+@app.route('/profile/edit', methods=['GET', 'POST'])
+@login_required
+def profile_edit():
+    form = EditProfileForm()
+    if form.validate_on_submit():
+        # current_user.name = form.name.data
+        # current_user.email = form.email.data
+        current_user.name = request.form['name']
+        current_user.surname = request.form['surname']
+        current_user.patronymic = request.form['patronymic']
+        current_user.gender = request.form['gender']
+        current_user.email = request.form['email']
+        current_user.password = request.form['password']
+        current_user.city = request.form['city']
+        current_user.telephone = request.form['telephone']
+        current_user.birthday = request.form['birthday']
+        current_user.vk = request.form['vk']
+        db.session.commit()
+        return redirect(url_for('profile'))
+    return render_template('profile_edit.html', form=form)
+
+@app.route('/user/<int:user_id>')
+def show_user(user_id):
+    # Получить объект пользователя по его номеру строки в базе данных
+    user = User.query.filter_by(id=user_id).first_or_404()
+    # Получить словарь, содержащий названия полей и их значения
+    user_data = user.__dict__
+    # Удалить лишние ключи из словаря
+    user_data.pop('_sa_instance_state', None)
+    # Вернуть HTML-страницу, передав словарь данных пользователя в шаблон
+    return render_template('user.html', user_data=user_data)
 
 @app.route('/logout')
 def logout():

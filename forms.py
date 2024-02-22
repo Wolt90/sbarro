@@ -22,25 +22,7 @@ class AgeValidator:
                 raise ValidationError(self.message)
         except (ValueError, TypeError):
             raise ValidationError(f'Ошибка, возраст только от {self.min_age} до {self.max_age}')
-
-# class LoginValidator:
-#     def __init__(self, min_age=7, max_age=90, message=None):
-#         self.min_age = min_age
-#         self.max_age = max_age
-#         if not message:
-#             message = f'Возраст должен быть между {min_age} и {max_age}.'
-#         self.message = message
-
-#     def __call__(self, form, field):
-#         try:
-#             birthdate = field.data
-#             today = date.today()
-#             age = today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
-#             if age < self.min_age or age > self.max_age:
-#                 raise ValidationError(self.message)
-#         except (ValueError, TypeError):
-#             raise ValidationError(f'Ошибка, возраст только от {self.min_age} до {self.max_age}')
-        
+    
 class RegistrationForm(FlaskForm):
     name = StringField('Имя', validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Введите только буквы")], render_kw={"placeholder": "Иван"})
     surname = StringField('Фамилия', validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Введите только буквы")], render_kw={"placeholder": "Иванов"})
@@ -54,21 +36,30 @@ class RegistrationForm(FlaskForm):
     vk = StringField('Ссылка на вконтакте', validators=[DataRequired(), Regexp('(?:https?://)?(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/\S*)?', message="Ошибка, пример ссылки: https://vk.com/example")], render_kw={"placeholder": "https://vk.com/example"})
     submit = SubmitField('Зарегистрироваться')
 
+    def validate_email(self, field):
+        user = User.query.filter_by(email=field.data).first()
+        if user:
+            raise ValidationError('Пользователь существует. Пожалуйста, <a href="/login">авторизуйтесь</a> или измените почту')
+
+class EditProfileForm(RegistrationForm):
+    submit = SubmitField('Сохранить изменения')
+    pass
+
 class LoginForm(FlaskForm):
     email = StringField('Почта', validators=[DataRequired()])   #Email(), 
     password = PasswordField('Пароль', validators=[DataRequired()])
     submit = SubmitField('Войти')
 
-    def validate_email(self, email):
-        user = User.query.filter_by(email=email.data).first()
-        if not user:
-            raise ValidationError('Пользователя с такой почтой не существует. Проверьте написание или зарегистрируйтесь')
-        # if email:
-        #     # Проверяем, соответствует ли введенный пароль хэшу в базе данных
-        #     if check_password_hash(user.password, generate_password_hash(self.password, method='pbkdf2:sha256')):
-        #         session['user'] = user
-        #     else:
-        #        raise ValidationError('Неправильный пароль') 
+    def validate_email(self, field):
+        user = User.query.filter_by(email=field.data).first()
+        if user is None:
+            raise ValidationError('Пользователь не найден. Пожалуйста, зарегистрируйтесь или введите корректную почту')
+
+    def validate_password(self, field):
+        user = User.query.filter_by(email=self.email.data).first()
+        if user:
+            if not check_password_hash(user.password, field.data):
+                raise ValidationError('Неверный пароль')
 
 class CompetitionForm(FlaskForm):
     title = StringField('Заголовок', validators=[DataRequired()])
