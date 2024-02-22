@@ -2,8 +2,12 @@ email_validator
 flask
 flask-wtf
 flask-login
+flask_admin
 sqlalchemy
 flask_sqlalchemy
 os
 time
+datetime
 pandas
+werkzeug.security
+Pillow

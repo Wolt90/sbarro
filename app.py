@@ -136,7 +136,7 @@ def add_competition():
         competition = Competition(title=form.title.data, date=form.date.data)
         if form.image.data:
             filename = form.image.data.filename
-            form.image.data.save(os.path.join('static', 'images', filename))
+            form.image.data.save(os.path.join('static', 'images', 'competitions', filename))
             competition.image = filename
         db.session.add(competition)
         db.session.commit()

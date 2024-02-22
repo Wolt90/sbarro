@@ -17,7 +17,7 @@
     <ul>
         {% for competition in competitions %}
         <li>
-            <a href="/page1"> <p>{{ competition.title }}</p><img src="{{ url_for('static', filename='images/' + competition.image) }}" class="img-fluid" alt="Page 1" width="120" height="100"><p>{{ competition.date }}</p></a>
+            <a href="/page1"> <p>{{ competition.title }}</p><img src="{{ url_for('static', filename='images/competition/' + competition.image) }}" class="img-fluid" alt="Page 1" width="120" height="100"><p>{{ competition.date }}</p></a>
         </li>
         {% endfor %}
     </ul>

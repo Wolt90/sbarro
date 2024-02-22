@@ -1,8 +1,17 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin
+from flask_admin import Admin, AdminIndexView, expose
+from flask_admin.contrib.sqla import ModelView
+from flask_admin.form.upload import ImageUploadField
 
+class YourAdminHomeView(AdminIndexView):
+    @expose('/')
+    def index(self):
+        return self.render('admin_home.html')
+    
 app = Flask(__name__)
+admin = Admin(app, name='Admin Panel', template_mode='bootstrap3', index_view=YourAdminHomeView())
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
 db1, db2 = "sqlite:///users.db", 'sqlite:///competitions.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = db1
@@ -28,9 +37,22 @@ class User(UserMixin, db.Model):
     birthday = db.Column(db.String(50), unique=False, nullable=False)
     vk = db.Column(db.String(50), unique=True, nullable=True)
 
+    def __repr__(self):
+        return '<User %r>' % self.name
+    
 class Competition(db.Model):
     __bind_key__ = 'db2'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     image = db.Column(db.String(100), nullable=False, default='default.jpg')
     date = db.Column(db.Date, nullable=False)
+
+# Определение представления для модели
+class CompetitionView(ModelView):
+    # Добавление поля для загрузки изображения
+    form_extra_fields = {
+        'image': ImageUploadField('Image', base_path='static/images/competitions', url_relative_path='uploads/competitions/')
+    }
+
+admin.add_view(ModelView(User, db.session))
+admin.add_view(CompetitionView(Competition, db.session))
