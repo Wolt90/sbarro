@@ -1,17 +1,25 @@
-from flask import Flask
+from flask import Flask, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin
+from flask_login import LoginManager, UserMixin, login_required, current_user
 from flask_admin import Admin, AdminIndexView, expose
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.form.upload import ImageUploadField
 
-class YourAdminHomeView(AdminIndexView):
+# Модель админа
+class AdminModelView(ModelView):
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.email == 'admin@list.ru'
+
+class MyAdminIndexView(AdminIndexView):
     @expose('/')
     def index(self):
-        return self.render('admin_home.html')
+        if current_user.is_authenticated and current_user.email == 'admin@list.ru':
+            return self.render('admin_home.html')
+        else:
+            return redirect(url_for('profile'))
     
 app = Flask(__name__)
-admin = Admin(app, name='Admin Panel', template_mode='bootstrap3', index_view=YourAdminHomeView())
+admin = Admin(app, name='Admin Panel', template_mode='bootstrap3', index_view=MyAdminIndexView())
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
 db1, db2 = "sqlite:///users.db", 'sqlite:///competitions.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = db1

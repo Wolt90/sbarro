@@ -1,7 +1,8 @@
 import pandas as pd
 import time
-from flask import render_template, request, redirect, url_for, flash, jsonify, session
-from flask_login import login_user, login_required, current_user
+from functools import wraps
+from flask import render_template, request, redirect, url_for, flash, jsonify, session, Response
+from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from forms import RegistrationForm, LoginForm, CompetitionForm, EditProfileForm
@@ -52,31 +53,37 @@ def login():
     login_form = LoginForm()
     if login_form.validate_on_submit():
         email = request.form['email']
+        # password = generate_password_hash(request.form.get('password'), method='pbkdf2:sha256')
         user = User.query.filter_by(email=email).first()
-        session['user_id'] = user.id
-        return redirect(url_for('profile'))
+        # if user and user.password == password:
+        login_user(user)
+        if user.email == 'admin@list.ru':
+            return redirect(url_for('admin.index'))
+        else:
+            return redirect(url_for('profile'))
 
     return render_template('login.html', form=login_form)
 
-@app.route('/profile')
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
 def profile():
-    if 'user_id' in session:
-        user_id = session['user_id']
-        user = User.query.get(user_id)  # Получаем пользователя из базы данных по его идентификатору
-        user_data = user.__dict__
-        # Удалить лишние ключи из словаря
-        user_data.pop('_sa_instance_state', None)
-        if user:
-            return render_template('profile.html', user_data=user_data, form=RegistrationForm())
-        else:
-            return "Пользователь не найден"
-    else:
-        return redirect(url_for('login'))  # Если пользователь не авторизован, перенаправляем его на страницу входа
+    user_data = current_user.__dict__
+    # Удалить лишние ключи из словаря
+    user_data.pop('_sa_instance_state', None)
+    # if request.method == 'POST':
+    #     # Обновление информации о пользователе на основе данных из формы
+    #     for field in current_user.__table__.columns:
+    #         setattr(current_user, field.name, request.form[field.name])
+    #     # Сохранение изменений в базе данных
+    #     db.session.commit()
+        # return redirect(url_for('profile'))
+    return render_template('profile.html', user_data=user_data, user=current_user, form=RegistrationForm())
 
-# @app.route('/profile')
-# @login_required
-# def profile():
-#     return render_template('profile.html', current_user=current_user)
+@app.route('/edit_profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    # Логика для редактирования профиля
+    return 'Edit profile page'
 
 @app.route('/profile/edit', methods=['GET', 'POST'])
 @login_required
@@ -112,8 +119,9 @@ def show_user(user_id):
 
 @app.route('/logout')
 def logout():
-    session.pop('email', None)
-    flash('Вы успешно вышли', 'success')
+    logout_user()
+    # session.pop('email', None)
+    # flash('Вы успешно вышли', 'success')
     return redirect(url_for('index'))
 
 @app.route('/')
@@ -142,6 +150,35 @@ def add_competition():
         db.session.commit()
         return redirect(url_for('index'))
     return render_template('add_competition.html', form=form)
+
+# # Имя пользователя и пароль для аутентификации
+# USERNAME = 'admin'
+# PASSWORD = 'password'
+
+# # Функция для проверки аутентификации
+# def check_auth(username, password):
+#     return username == USERNAME and password == PASSWORD
+
+# # Функция для отказа в доступе
+# def authenticate():
+#     return Response('Unauthorized', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
+
+# # Декоратор для защиты маршрутов с использованием базовой аутентификации
+# def requires_auth(f):
+#     @wraps(f)
+#     def decorated(*args, **kwargs):
+#         auth = request.authorization
+#         if not auth or not check_auth(auth.username, auth.password):
+#             return authenticate()
+#         return f(*args, **kwargs)
+#     return decorated
+
+# # Защищенный маршрут, требующий аутентификации
+# @app.route('/admin', methods=['GET', 'POST'])
+# @login_required
+# # @requires_auth
+# def admin_home():
+#     return render_template('admin_home.html')
 
 with app.app_context(): 
     db.create_all() 
