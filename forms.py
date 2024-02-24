@@ -5,6 +5,8 @@ from datetime import date
 from werkzeug.security import generate_password_hash, check_password_hash
 from configs_clases import User
 
+fields_reg = {'name':'Имя', 'surname':'Фамилия','patronymic':'Отчество','gender':'Пол','email':'Почта','password':'Пароль','city':'Город','telephone':'Телефон','birthday':'День рождения','vk':'Ссылка на вконтакте'}
+
 class AgeValidator:
     def __init__(self, min_age=7, max_age=90, message=None):
         self.min_age = min_age
@@ -24,16 +26,16 @@ class AgeValidator:
             raise ValidationError(f'Ошибка, возраст только от {self.min_age} до {self.max_age}')
     
 class RegistrationForm(FlaskForm):
-    name = StringField('Имя', validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Введите только буквы")], render_kw={"placeholder": "Иван"})
-    surname = StringField('Фамилия', validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Введите только буквы")], render_kw={"placeholder": "Иванов"})
-    patronymic = StringField('Отчество', validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Введите только буквы")], render_kw={"placeholder": "Иванович"}) # отчество
-    gender = RadioField('Пол', choices=[('М','М'), ('Ж','Ж')], validators=[DataRequired()])
-    email = StringField('Почта', validators=[DataRequired(), Regexp('[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}', message="Не почта, пример - ivanov@mail.ru")], render_kw={"placeholder": "ivanov@mail.ru"})   #Email(), 
-    password = PasswordField('Пароль', validators=[DataRequired()])
-    city = StringField('Город', validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Введите только буквы")], render_kw={"placeholder": "Иваново"})
-    telephone = StringField('Телефон', validators=[DataRequired(), Regexp('^\d{11}$', message="Введите 11 цифр без () и +, пример 79102345678")], render_kw={"placeholder": "79102345678"})
-    birthday = DateField('День рождения', validators=[DataRequired(), AgeValidator()])
-    vk = StringField('Ссылка на вконтакте', validators=[DataRequired(), Regexp('(?:https?://)?(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/\S*)?', message="Ошибка, пример ссылки: https://vk.com/example")], render_kw={"placeholder": "https://vk.com/example"})
+    name = StringField(fields_reg['name'], validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Введите только буквы")], render_kw={"placeholder": "Иван"})
+    surname = StringField(fields_reg['surname'], validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Введите только буквы")], render_kw={"placeholder": "Иванов"})
+    patronymic = StringField(fields_reg['patronymic'], validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Введите только буквы")], render_kw={"placeholder": "Иванович"}) # отчество
+    gender = RadioField(fields_reg['gender'], choices=[('М','М'), ('Ж','Ж')], validators=[DataRequired()])
+    email = StringField(fields_reg['email'], validators=[DataRequired(), Regexp('[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}', message="Не почта, пример - ivanov@mail.ru")], render_kw={"placeholder": "ivanov@mail.ru"})   #Email(), 
+    password = PasswordField(fields_reg['password'], validators=[DataRequired()])
+    city = StringField(fields_reg['city'], validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Введите только буквы")], render_kw={"placeholder": "Иваново"})
+    telephone = StringField(fields_reg['telephone'], validators=[DataRequired(), Regexp('^\d{11}$', message="Введите 11 цифр без () и +, пример 79102345678")], render_kw={"placeholder": "79102345678"})
+    birthday = DateField(fields_reg['birthday'], validators=[DataRequired(), AgeValidator()])
+    vk = StringField(fields_reg['vk'], validators=[DataRequired(), Regexp('(?:https?://)?(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/\S*)?', message="Ошибка, пример ссылки: https://vk.com/example")], render_kw={"placeholder": "https://vk.com/example"})
     submit = SubmitField('Зарегистрироваться')
 
     def validate_email(self, field):

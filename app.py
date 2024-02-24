@@ -5,8 +5,8 @@ from flask import render_template, request, redirect, url_for, flash, jsonify, s
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
-from forms import RegistrationForm, LoginForm, CompetitionForm, EditProfileForm
-from configs_clases import User, Competition, app, db, login_manager
+from forms import RegistrationForm, LoginForm, CompetitionForm, EditProfileForm,  fields_reg
+from configs_clases import User, Competition, UserRelationship, app, db, login_manager
 
 # Контекстный процессор для передачи формы входа во все шаблоны
 @app.context_processor
@@ -67,55 +67,77 @@ def login():
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
-    user_data = current_user.__dict__
-    # Удалить лишние ключи из словаря
-    user_data.pop('_sa_instance_state', None)
-    # if request.method == 'POST':
-    #     # Обновление информации о пользователе на основе данных из формы
-    #     for field in current_user.__table__.columns:
-    #         setattr(current_user, field.name, request.form[field.name])
-    #     # Сохранение изменений в базе данных
-    #     db.session.commit()
-        # return redirect(url_for('profile'))
-    return render_template('profile.html', user_data=user_data, user=current_user, form=RegistrationForm())
+    # user_data0 = current_user.__dict__
+    # # Удалить лишние ключи из словаря
+    # try:
+    #     user_data0.pop('_sa_instance_state', None)
+    # except:
+    #     pass
+    # user_data = {fields_reg[key]: user_data0[key] for key in fields_reg}
+    # Получаем пользователя из базы данных
+    user = User.query.get(current_user.id)
+    # Создаем форму для авторизованного пользователя
+    form_user = RegistrationForm(obj=user)
+    if form_user.validate_on_submit():
+        form_user.populate_obj(user)
+        db.session.commit()
+        return redirect(url_for('profile'))
 
-@app.route('/edit_profile', methods=['GET', 'POST'])
-@login_required
-def edit_profile():
-    # Логика для редактирования профиля
-    return 'Edit profile page'
+    # Получаем список пользователей, добавленных текущим пользователем
+    added_users = UserRelationship.query.filter_by(user_id=current_user.id).all()
+
+    # Создаем форму для списка добавленных пользователей
+    form_added_users = RegistrationForm()    
+    return render_template('profile.html', form_user=form_user, form_added_users=form_added_users, added_users=added_users) #, user=current_user, users=users, added_users=added_users) #user_data=user_data, form=RegistrationForm(), 
 
 @app.route('/profile/edit', methods=['GET', 'POST'])
 @login_required
 def profile_edit():
-    form = EditProfileForm()
-    if form.validate_on_submit():
-        # current_user.name = form.name.data
-        # current_user.email = form.email.data
-        current_user.name = request.form['name']
-        current_user.surname = request.form['surname']
-        current_user.patronymic = request.form['patronymic']
-        current_user.gender = request.form['gender']
-        current_user.email = request.form['email']
-        current_user.password = request.form['password']
-        current_user.city = request.form['city']
-        current_user.telephone = request.form['telephone']
-        current_user.birthday = request.form['birthday']
-        current_user.vk = request.form['vk']
-        db.session.commit()
-        return redirect(url_for('profile'))
-    return render_template('profile_edit.html', form=form)
+    # Логика для редактирования профиля
+    return 'Edit profile page'
 
-@app.route('/user/<int:user_id>')
-def show_user(user_id):
-    # Получить объект пользователя по его номеру строки в базе данных
-    user = User.query.filter_by(id=user_id).first_or_404()
-    # Получить словарь, содержащий названия полей и их значения
-    user_data = user.__dict__
-    # Удалить лишние ключи из словаря
-    user_data.pop('_sa_instance_state', None)
-    # Вернуть HTML-страницу, передав словарь данных пользователя в шаблон
-    return render_template('user.html', user_data=user_data)
+@app.route('/profile/add_user', methods=['POST'])
+@login_required
+def profile_add_user():
+    # Получаем данные из формы
+    user_id = request.form['user_id']
+    # Создаем новую связь пользователя
+    relationship = UserRelationship(user_id=current_user.id, related_user_id=user_id)
+    db.session.add(relationship)
+    db.session.commit()
+    return redirect(url_for('profile'))
+
+# @app.route('/profile/edit', methods=['GET', 'POST'])
+# @login_required
+# def profile_edit():
+#     form = EditProfileForm()
+#     if form.validate_on_submit():
+#         # current_user.name = form.name.data
+#         # current_user.email = form.email.data
+#         current_user.name = request.form['name']
+#         current_user.surname = request.form['surname']
+#         current_user.patronymic = request.form['patronymic']
+#         current_user.gender = request.form['gender']
+#         current_user.email = request.form['email']
+#         current_user.password = request.form['password']
+#         current_user.city = request.form['city']
+#         current_user.telephone = request.form['telephone']
+#         current_user.birthday = request.form['birthday']
+#         current_user.vk = request.form['vk']
+#         db.session.commit()
+#         return redirect(url_for('profile'))
+#     return render_template('profile_edit.html', form=form)
+
+# @app.route('/user/<int:user_id>')
+# def show_user(user_id):
+#     # Получить объект пользователя по его номеру строки в базе данных
+#     user = User.query.filter_by(id=user_id).first_or_404()
+#     # Получить словарь, содержащий названия полей и их значения
+#     user_data = user.__dict__
+#     # Удалить лишние ключи из словаря
+#     user_data.pop('_sa_instance_state', None)
+#     # Вернуть HTML-страницу, передав словарь данных пользователя в шаблон
+#     return render_template('user.html', user_data=user_data)
 
 @app.route('/logout')
 def logout():
@@ -150,35 +172,6 @@ def add_competition():
         db.session.commit()
         return redirect(url_for('index'))
     return render_template('add_competition.html', form=form)
-
-# # Имя пользователя и пароль для аутентификации
-# USERNAME = 'admin'
-# PASSWORD = 'password'
-
-# # Функция для проверки аутентификации
-# def check_auth(username, password):
-#     return username == USERNAME and password == PASSWORD
-
-# # Функция для отказа в доступе
-# def authenticate():
-#     return Response('Unauthorized', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
-
-# # Декоратор для защиты маршрутов с использованием базовой аутентификации
-# def requires_auth(f):
-#     @wraps(f)
-#     def decorated(*args, **kwargs):
-#         auth = request.authorization
-#         if not auth or not check_auth(auth.username, auth.password):
-#             return authenticate()
-#         return f(*args, **kwargs)
-#     return decorated
-
-# # Защищенный маршрут, требующий аутентификации
-# @app.route('/admin', methods=['GET', 'POST'])
-# @login_required
-# # @requires_auth
-# def admin_home():
-#     return render_template('admin_home.html')
 
 with app.app_context(): 
     db.create_all() 

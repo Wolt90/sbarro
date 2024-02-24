@@ -21,10 +21,10 @@ class MyAdminIndexView(AdminIndexView):
 app = Flask(__name__)
 admin = Admin(app, name='Admin Panel', template_mode='bootstrap3', index_view=MyAdminIndexView())
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
-db1, db2 = "sqlite:///users.db", 'sqlite:///competitions.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = db1
+# db1, db2 = "sqlite:///users.db", 'sqlite:///competitions.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sbarro.db'
 # app.config['SQLALCHEMY_DATABASE_URI_2'] = db2
-app.config['SQLALCHEMY_BINDS'] = {'db1': db1,'db2': db2}
+# app.config['SQLALCHEMY_BINDS'] = {'db1': db1,'db2': db2}
 app.config['SECRET_KEY'] = 'secret_key'
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
@@ -32,7 +32,7 @@ login_manager.login_view = 'login'
 
 # Модель для хранения пользователей
 class User(UserMixin, db.Model):
-    __bind_key__ = 'db1'
+    # __bind_key__ = 'db1'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
@@ -47,9 +47,14 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return '<User %r>' % self.name
-    
+
+class UserRelationship(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    related_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
 class Competition(db.Model):
-    __bind_key__ = 'db2'
+    # __bind_key__ = 'db2'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     image = db.Column(db.String(100), nullable=False, default='default.jpg')
