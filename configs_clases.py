@@ -32,7 +32,6 @@ login_manager.login_view = 'login'
 
 # Модель для хранения пользователей
 class User(UserMixin, db.Model):
-    # __bind_key__ = 'db1'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
@@ -48,13 +47,17 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return '<User %r>' % self.name
 
-class UserRelationship(db.Model):
+class UserAdd(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    related_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    name = db.Column(db.String(50), unique=False, nullable=False)
+    surname = db.Column(db.String(50), unique=False, nullable=False)
+    patronymic = db.Column(db.String(50), unique=False, nullable=True) # отчество
+    gender = db.Column(db.String(1), unique=False, nullable=False)
+    city = db.Column(db.String(50), unique=False, nullable=False)
+    birthday = db.Column(db.String(50), unique=False, nullable=False)
 
 class Competition(db.Model):
-    # __bind_key__ = 'db2'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     image = db.Column(db.String(100), nullable=False, default='default.jpg')

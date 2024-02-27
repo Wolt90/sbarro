@@ -5,8 +5,8 @@ from flask import render_template, request, redirect, url_for, flash, jsonify, s
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
-from forms import RegistrationForm, LoginForm, CompetitionForm, EditProfileForm,  fields_reg
-from configs_clases import User, Competition, UserRelationship, app, db, login_manager
+from forms import RegistrationForm, LoginForm, CompetitionForm, AddUserForm,  fields_reg
+from configs_clases import User, Competition, UserAdd, app, db, login_manager
 
 # Контекстный процессор для передачи формы входа во все шаблоны
 @app.context_processor
@@ -67,83 +67,57 @@ def login():
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
-    # user_data0 = current_user.__dict__
-    # # Удалить лишние ключи из словаря
-    # try:
-    #     user_data0.pop('_sa_instance_state', None)
-    # except:
-    #     pass
-    # user_data = {fields_reg[key]: user_data0[key] for key in fields_reg}
-    # Получаем пользователя из базы данных
-    user = User.query.get(current_user.id)
-    # Создаем форму для авторизованного пользователя
-    form_user = RegistrationForm(obj=user)
-    if form_user.validate_on_submit():
-        form_user.populate_obj(user)
-        db.session.commit()
-        return redirect(url_for('profile'))
-
     # Получаем список пользователей, добавленных текущим пользователем
-    added_users = UserRelationship.query.filter_by(user_id=current_user.id).all()
-
-    # Создаем форму для списка добавленных пользователей
-    form_added_users = RegistrationForm()    
-    return render_template('profile.html', form_user=form_user, form_added_users=form_added_users, added_users=added_users) #, user=current_user, users=users, added_users=added_users) #user_data=user_data, form=RegistrationForm(), 
+    current_user_id = current_user.id
+    added_users = UserAdd.query.join(User, User.id == UserAdd.user_id).all()
+  
+    return render_template('profile.html', users=added_users, current_user_id=current_user_id) #, form_added_users=form_added_users, added_users=added_users, user=current_user, users=users, added_users=added_users) #user_data=user_data, form=RegistrationForm(), 
 
 @app.route('/profile/edit', methods=['GET', 'POST'])
 @login_required
 def profile_edit():
-    # Логика для редактирования профиля
-    return 'Edit profile page'
+    user = User.query.get(current_user.id)
+    form = RegistrationForm(obj=user)
+    if form.validate_on_submit():
+        form.populate_obj(user)
+        db.session.commit()
+        return redirect(url_for('profile'))
+    return render_template('profile_edit.html', form=form)
 
-@app.route('/profile/add_user', methods=['POST'])
+@app.route('/profile/add_user', methods=['GET', 'POST'])
 @login_required
 def profile_add_user():
-    # Получаем данные из формы
-    user_id = request.form['user_id']
-    # Создаем новую связь пользователя
-    relationship = UserRelationship(user_id=current_user.id, related_user_id=user_id)
-    db.session.add(relationship)
-    db.session.commit()
-    return redirect(url_for('profile'))
+    form = AddUserForm()
+    if form.validate_on_submit(): # проверка на валидацию       
+        name = request.form['name']
+        surname = request.form['surname']
+        patronymic = request.form['patronymic']
+        gender = request.form['gender']       
+        city = request.form['city']
+        birthday = request.form['birthday']
+        
+        new_add_user = UserAdd(user_id = current_user.id, name=name, surname=surname, patronymic=patronymic, gender=gender, city=city, birthday=birthday)
+        db.session.add(new_add_user)
+        db.session.commit()
 
-# @app.route('/profile/edit', methods=['GET', 'POST'])
-# @login_required
-# def profile_edit():
-#     form = EditProfileForm()
-#     if form.validate_on_submit():
-#         # current_user.name = form.name.data
-#         # current_user.email = form.email.data
-#         current_user.name = request.form['name']
-#         current_user.surname = request.form['surname']
-#         current_user.patronymic = request.form['patronymic']
-#         current_user.gender = request.form['gender']
-#         current_user.email = request.form['email']
-#         current_user.password = request.form['password']
-#         current_user.city = request.form['city']
-#         current_user.telephone = request.form['telephone']
-#         current_user.birthday = request.form['birthday']
-#         current_user.vk = request.form['vk']
-#         db.session.commit()
-#         return redirect(url_for('profile'))
-#     return render_template('profile_edit.html', form=form)
+        return redirect(url_for('profile'))
 
-# @app.route('/user/<int:user_id>')
-# def show_user(user_id):
-#     # Получить объект пользователя по его номеру строки в базе данных
-#     user = User.query.filter_by(id=user_id).first_or_404()
-#     # Получить словарь, содержащий названия полей и их значения
-#     user_data = user.__dict__
-#     # Удалить лишние ключи из словаря
-#     user_data.pop('_sa_instance_state', None)
-#     # Вернуть HTML-страницу, передав словарь данных пользователя в шаблон
-#     return render_template('user.html', user_data=user_data)
+    return render_template('profile_add_user.html', form=form)
+
+@app.route('/profile/edit_add', methods=['GET', 'POST'])
+@login_required
+def profile_edit_add():
+    user_add = User.query.get(current_user.id)
+    form = AddUserForm(obj=user_add)
+    if form.validate_on_submit():
+        form.populate_obj(user_add)
+        db.session.commit()
+        return redirect(url_for('profile'))
+    return render_template('profile_edit_add.html', form=form)
 
 @app.route('/logout')
 def logout():
     logout_user()
-    # session.pop('email', None)
-    # flash('Вы успешно вышли', 'success')
     return redirect(url_for('index'))
 
 @app.route('/')
@@ -177,5 +151,4 @@ with app.app_context():
     db.create_all() 
 
 if __name__ == '__main__':
-    # db.create_all()
     app.run(debug=True)

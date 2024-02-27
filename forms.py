@@ -43,9 +43,14 @@ class RegistrationForm(FlaskForm):
         if user:
             raise ValidationError('Пользователь существует. Пожалуйста, <a href="/login">авторизуйтесь</a> или измените почту')
 
-class EditProfileForm(RegistrationForm):
-    submit = SubmitField('Сохранить изменения')
-    pass
+class AddUserForm(FlaskForm):
+    name = StringField(fields_reg['name'], validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Введите только буквы")], render_kw={"placeholder": "Иван"})
+    surname = StringField(fields_reg['surname'], validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Введите только буквы")], render_kw={"placeholder": "Иванов"})
+    patronymic = StringField(fields_reg['patronymic'], validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Введите только буквы")], render_kw={"placeholder": "Иванович"}) # отчество
+    gender = RadioField(fields_reg['gender'], choices=[('М','М'), ('Ж','Ж')], validators=[DataRequired()])
+    city = StringField(fields_reg['city'], validators=[DataRequired(), Regexp('^[а-яА-ЯёЁa-zA-Z]+$', message="Введите только буквы")], render_kw={"placeholder": "Иваново"})
+    birthday = DateField(fields_reg['birthday'], validators=[DataRequired(), AgeValidator()])
+    submit = SubmitField('Сохранить')
 
 class LoginForm(FlaskForm):
     email = StringField('Почта', validators=[DataRequired()])   #Email(), 

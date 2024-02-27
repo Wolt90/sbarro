@@ -1,0 +1,38 @@
+{% macro user_table(users, edit_button=True, add_button=True, checkbox=True) %}
+<table class="table">
+  <thead>
+    <tr>
+      <th>Имя</th>
+      <th>Фамилия</th>
+      <th>Отчество</th>
+      <th>Редактировать</th>
+      <th>Добавить</th>
+      {% if checkbox %}
+        <th>Выбрать</th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+      <tr>
+        <td>{{ user['name'] }}</td>
+        <td>{{ user['surname'] }}</td>
+        <td>{{ user['patronymic'] }}</td>
+        {% if edit_button %}
+          <td><a href="{{ url_for('edit_user', user_id=user['id']) }}" class="btn btn-primary">Редактировать</a></td>
+        {% else %}
+          <td></td>
+        {% endif %}
+        {% if add_button %}
+          <td><a href="{{ url_for('add_user') }}" class="btn btn-success">Добавить</a></td>
+        {% else %}
+          <td></td>
+        {% endif %}
+        {% if checkbox %}
+          <td><input type="checkbox" name="selected_users" value="{{ user['id'] }}"></td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endmacro %}

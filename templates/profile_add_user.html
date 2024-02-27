@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Личный кабинет</title>
+    <title>Добавление в свой список</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
 {% include 'header.html' %}
 <div class="container">    
     <div class="register">
+        <h1>Добавить спортсмена</h1>
         <form method="POST">
             {{ form.hidden_tag() }}
             {% for field in form %}
-                {% if field.name not in ['gender', 'birthday', 'submit'] %}
+                {% if field.name not in ['gender'] %}
                     <div class="form-group">
                         {% if field.name not in ['csrf_token', 'submit'] %}
                             <label>{{ field.label }}</label>
@@ -23,7 +24,7 @@
                             <span class="invalid-feedback">{{ error | safe }}</span>
                         {% endfor %}
                     </div>
-                {% elif field.name in ['gender'] %}
+                {% else %}
                     {{ field.label }}
                     {% for subfield in field %}
                     <div class="radio">                      
@@ -31,10 +32,6 @@
                         {{ subfield.label }}
                     </div>
                     {% endfor %}
-                {% elif field.name in ['submit'] %}
-                    <div class="form-group">
-                        {{ form.submit(value="Сохранить") }}
-                    </div>
                 {% endif %}
             {% endfor %}
         </form>

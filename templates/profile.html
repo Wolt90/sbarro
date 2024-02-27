@@ -6,49 +6,38 @@
 </head>
 <body>
 {% include 'header.html' %}
-    <h1>Profile</h1>
-    <h2>User Information</h2>
-    <form method="POST" action="{{ url_for('profile') }}">
-        {{ form_user.hidden_tag() }}
-        {% for field in form_user %}
-            {% if field.name in ['name', 'email'] %}
-                <div class="form-group">
-                    {% if field.name not in ['csrf_token', 'submit', 'birthday'] %}
-                        <label>{{ field.label }}</label>
-                    {% endif %}
-                    {{ field(class="form-control" + (' is-invalid' if field.errors else '')) }}
-                    {% for error in field.errors %}
-                        <span class="invalid-feedback">{{ error | safe }}</span>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endfor %}
-        <button type="submit">Save</button>
-    </form>
+<h1>Личный кабинет</h1>
+<p>Привет, {{ current_user.name }}!</p>
+<td><a href="{{ url_for('profile_edit', user_id=current_user_id) }}" class="btn btn-primary">Редактировать себя</a></td>
+<br>
+<td><a href="{{ url_for('profile_add_user') }}" class="btn btn-success">Добавить для регистрации от себя</a></td>
+<br>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Имя</th>
+      <th>Фамилия</th>
+      <th>Отчество</th>
+      {% if checkbox %}
+        <th>Выбрать</th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+      <tr>
+        <td><a href="{{ url_for('profile_edit_add') }}" class="btn btn-success">{{ user['name'] }}</a></td>
+        <td>{{ user['surname'] }}</td>
+        <td>{{ user['patronymic'] }}</td>
+        {% if checkbox %}
+          <td><input type="checkbox" name="selected_users" value="{{ user['id'] }}"></td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
 
-    <h2>Added Users</h2>
-    <form method="POST" action="{{ url_for('profile_add_user') }}">
-        {{ form_added_users.hidden_tag() }}
-        {% for field in form_added_users %}
-            {% if field.name in ['name', 'email'] %}
-                <div class="form-group">
-                    {% if field.name not in ['csrf_token', 'submit', 'birthday'] %}
-                        <label>{{ field.label }}</label>
-                    {% endif %}
-                    {{ field(class="form-control" + (' is-invalid' if field.errors else '')) }}
-                    {% for error in field.errors %}
-                        <span class="invalid-feedback">{{ error | safe }}</span>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endfor %}
-        <button type="submit">Add User</button>
-    </form>
-    <ul>
-        {% for added_user in added_users %}
-            <li>{{ added_user.name }} - {{ added_user.email }}</li>
-        {% endfor %}
-    </ul>
+
 {% include 'contact-info.html' %}
 </body>
 </html>
